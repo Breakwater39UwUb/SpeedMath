@@ -1,4 +1,4 @@
-// package SpeedMath;
+package SpeedMath;
 
 import java.io.*;
 import java.util.Scanner;
