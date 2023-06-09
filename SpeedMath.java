@@ -352,10 +352,8 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
 
         while(!driver.isDone && endNote < map.qNotes) {
             ARtimer.start();
-            try {
+            synchronized(driver){
                 driver.wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         }
         
@@ -389,7 +387,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     private String pathChooser(int mode) {
         String filename = null;
         JFileChooser fChooser = new JFileChooser();
-        fChooser.setCurrentDirectory(new java.io.File("./SpeedMath/Maps"));
+        fChooser.setCurrentDirectory(new java.io.File("./Maps"));   // ./SpeedMath/Maps/
         if (mode == 1) {
             fChooser.setDialogTitle("Map Load Path");
             fChooser.setFileFilter(new FileNameExtensionFilter("Speed Math beatmap file", "SPMbeatmap"));
@@ -440,7 +438,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
                 return;
             }
             System.out.println("Action to game console event");
-            String mapName = "./SpeedMath/Maps/" + getText.getText() + ".SPMbeatmap";
+            String mapName = "./Maps/" + getText.getText() + ".SPMbeatmap";   // "./SpeedMath/Maps/"
             try {
                 this.map = map.loadMap(mapName);
             } catch (ClassNotFoundException | IOException e1) {e1.printStackTrace();}
