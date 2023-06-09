@@ -1,17 +1,14 @@
-package SpeedMath;
+// package SpeedMath;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.*;
-import java.util.Scanner;
 
 public class SpeedMath {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
         String mapFile1 = "Map1.txt";
         SpeedMathMaps map1 = new SpeedMathMaps();
         SpeedMathGraphics window = new SpeedMathGraphics(map1);
@@ -508,10 +505,6 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         }
     }
 
-    private void approaching(Timer t) {
-        t.start();
-    }
-
     public void gactionPerformed(ActionEvent e) {
         System.out.println(endNote+" is painting...");
         Timer t = (Timer)e.getSource();
@@ -590,8 +583,8 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     }
     
     public void mouseMoved(MouseEvent e) {
-        int posX = e.getX();
-        int posY = e.getY();
+        // int posX = e.getX();
+        // int posY = e.getY();
         // System.out.println("X: " + posX + " Y: " + posY);
 
 
