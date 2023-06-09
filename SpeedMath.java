@@ -349,13 +349,12 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
 
         while(!driver.isDone && endNote < map.qNotes) {
             ARtimer.start();
-            synchronized(driver){
-                try {
-                    driver.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            try {
+                driver.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+            
         }
         
         // SwingUtilities.invokeLater(()->approaching(ARtimer));
