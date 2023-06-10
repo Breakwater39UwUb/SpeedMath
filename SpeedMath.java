@@ -1,13 +1,13 @@
 package SpeedMath;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.*;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 
 
 public class SpeedMath {
@@ -89,7 +89,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     JSlider qNoteSlider;
     Timer ARtimer;
     Timer noTimer;
-    CountDownLatch latch;
+    AtomicBoolean isTimerDone;
 
     public SpeedMathGraphics(SpeedMathMaps obj) {
         super("SpeedMath - by 41043152");
@@ -314,6 +314,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         boolean isDone;
         public GameDriver() {
             super();
+            setDaemon(false);
         }
         public void run() {
             System.out.println("driver.start();"); //
@@ -323,26 +324,19 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             endNote = 0;
             
             while (endNote < map.qNotes) {
-                if (ARtimer.isRunning())
-                continue;
+                System.out.println("game loop");
+                if (ARtimer.isRunning()) System.out.println("Artimer is running);");
+                if (ARtimer.isRunning() && !noteDone)
+                    continue;
+                
+                noteDone = false;
+                outerCircleSize = oCS;
                 circlePosX = (int) (Math.random() * (1620 - 200 + 1)) + 200;
                 circlePosY = (int) (Math.random() * (600 - 100 + 1)) + 100;
                 System.out.println("Note " + endNote + " at " + circlePosX + ", " + circlePosY);
                 
-                noteDone = false;
                 ARtimer.start();
-                /* if (outerCircleSize <= innerCircleSize) {
-                    noteDone = true;
-                    break;
-                } else {
-                    noteDone = false;
-                } */
                 
-                // SwingUtilities.invokeAndWait(()->approaching(ARtimer));
-                
-                // this.wait();
-                
-                outerCircleSize = oCS;
                 endNote++;
             }
             isDone = true;
@@ -350,33 +344,36 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     }
     
     private void gameLoop() {
-        innerCircleSize = map.CS;
-        outerCircleSize = (int) Math.round(map.CS*2.5);
-        int oCS = outerCircleSize;
-        endNote = 0;
+        // innerCircleSize = map.CS;
+        // outerCircleSize = (int) Math.round(map.CS*2.5);
+        // int oCS = outerCircleSize;
+        // endNote = 0;
+        ARtimer = new Timer(350, this::paintCircleAction);
+        ARtimer.setDelay(0);
+        ARtimer.setInitialDelay(0);
 
-        // ARtimer = new Timer(150, this::paintCircleAction);
-        // driver = new GameDriver();
-        // driver.start();
-        // ARtimer.setDelay(0);
-        SwingUtilities.invokeLater(() -> approaching());
-        System.out.println(SwingUtilities.isEventDispatchThread());
-        while(endNote < map.qNotes) {
-            if (ARtimer.isRunning() && !noteDone)
-                continue;
-            outerCircleSize = oCS;
-            noteDone = false;
-            System.out.println("game loop");
-            circlePosX = (int) (Math.random() * (1620 - 200 + 1)) + 200;
-            circlePosY = (int) (Math.random() * (600 - 100 + 1)) + 100;
-            System.out.println("Note " + endNote + " at " + circlePosX + ", " + circlePosY);
+        // isTimerDone = new AtomicBoolean(false);
+        driver = new GameDriver();
+        driver.start();
+        // approaching();
+        
+        
+        // while(endNote < map.qNotes) {
+            // if (ARtimer.isRunning()) System.out.println("Artimer is running);");
+            // if (ARtimer.isRunning() && !noteDone)
+            //     continue;
+            // outerCircleSize = oCS;
+            // noteDone = false;
+            // circlePosX = (int) (Math.random() * (1620 - 200 + 1)) + 200;
+            // circlePosY = (int) (Math.random() * (600 - 100 + 1)) + 100;
+            // System.out.println("Note " + endNote + " at " + circlePosX + ", " + circlePosY);
+
+
             
-            ARtimer.start();
-            
+            // ARtimer.start();
             // while(!ARtimer.isRunning())
-            
-            endNote++;
-        }
+        //     endNote++;
+        // }
     }
     
     public void paint(Graphics game) {
@@ -503,6 +500,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         if (clickedJButton == startGame) {
             System.out.println("Click the cIrClEs!");
             gameProgress.setText(String.valueOf(earnScore)+"/"+String.valueOf(fullScore));
+            // approaching();
             gameLoop();
             this.gameConsoleField.transferFocusUpCycle();
         }
@@ -541,6 +539,13 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         ARtimer.setDelay(0);
         ARtimer.setInitialDelay(0);
         ARtimer.start();
+        // SwingUtilities.invokeLater(()->ARtimer.start());
+        // SwingUtilities.invokeLater(new Runnable() {
+        //     @Override
+        //     public void run() {
+        //         ARtimer.start();
+        //     }
+        // });
     }
 
     public void setNoteAction(ActionEvent e) {
@@ -548,7 +553,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     }
 
     public void paintCircleAction(ActionEvent e) {
-        System.out.println(endNote+" is painting...");
+        System.out.println(endNote + "@" + circlePosX + ", " + circlePosY + " is painting...");
         
         if (outerCircleSize <= innerCircleSize) {
             noteDone = true;
@@ -558,10 +563,10 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             ARtimer.stop();
             // return;
         } else {
-            noteDone = false;
-            this.outerCircleSize-=5;
-            // paint(gamePaintArea.getGraphics());
             update(gamePaintArea.getGraphics());
+            this.outerCircleSize-=5;
+            noteDone = false;
+            // paint(gamePaintArea.getGraphics());
         }
     }
 
