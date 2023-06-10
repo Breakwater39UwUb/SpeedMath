@@ -35,6 +35,20 @@
     >       Add file chooser to get file path for save and load
     >[Selecting Folder Destination in Java?](https://stackoverflow.com/questions/10083447/selecting-folder-destination-in-java)
 
+6.  >Swing timers
+    >
+    >       All issuse in swing timer and thread usage
+    >       About Swing.Timer start a dispatch thread, and non daemon threads
+    >[Make a Swing Timer execute N times?](https://stackoverflow.com/questions/16280425/make-a-swing-timer-execute-n-times)
+    >
+    >[Java Swing Timer Not Starting?](https://stackoverflow.com/questions/24102757/java-swing-timer-not-starting)
+    >
+    >[What is a daemon thread in Java?](https://stackoverflow.com/questions/2213340/what-is-a-daemon-thread-in-java)
+    >
+    >[Class Timer](https://docs.oracle.com/en/java/javase/17/docs/api/java.desktop/javax/swing/Timer.html)
+    >
+    >[]()
+
 ---
 *       void SpeedMath.SpeedMathGraphics.paint(Graphics game)
         don't work properly on mac os
