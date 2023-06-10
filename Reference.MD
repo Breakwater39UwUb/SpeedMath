@@ -51,9 +51,15 @@
     >[What is a daemon thread in Java?](https://stackoverflow.com/questions/2213340/what-is-a-daemon-thread-in-java)
     >
     >[Class Timer](https://docs.oracle.com/en/java/javase/17/docs/api/java.desktop/javax/swing/Timer.html)
-    >
-    >[]()
 
+7.  >void SpeedMath.SpeedMathGraphics.paint(Graphics game)
+    >
+    >       Draw the string centered on the game area
+    >[How can I center Graphics.drawString() in Java?](https://stackoverflow.com/questions/27706197/how-can-i-center-graphics-drawstring-in-java)
+
+8.  >
+    >
+    >
 ---
 *       void SpeedMath.SpeedMathGraphics.paint(Graphics game)
         don't work properly on mac os
