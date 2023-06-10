@@ -32,5 +32,10 @@
 ### 公式
         game area 360~1560 border
         圓圈像素大小    CS*8
+        外圈像素大小    CS*3
         縮圈速度        map.AR*50
         answer area is x:, y:800
+
+        qNote   totalNotes/5, no round
+        qNote Position  X:200, 900, 1500
+                        Y:850
