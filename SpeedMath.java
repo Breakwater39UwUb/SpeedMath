@@ -425,6 +425,9 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             // outer circle
             game.setColor(new Color(197, 57, 67, 100));
             game.fillOval(outerCirclePosX, outerCirclePosY, outerCircleSize, outerCircleSize);
+
+            // for test the coordinates
+            // game.fillRect(circlePosX, circlePosY, innerCircleSize/2, innerCircleSize/2);
         } else {            
             // set 3 answer circles
             for (int i = 0; i < 3; i++) {
@@ -627,12 +630,19 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     }
 
     private boolean checkhit (int x, int y) {
+        System.out.println("Clicked at X: " + x + " Y: " + y);
+
         Timer hitFadeTimer = new Timer(100, this::fadeActionPerformed);
 
-        System.out.println("Clicked at X: " + x + " Y: " + y);
         paintHit(gamePaintArea.getGraphics(), x, y);
         fadeoHit(gamePaintArea.getGraphics(), hitFadeTimer, x, y);
-        if (x > circlePosX+5 && x < circlePosX + innerCircleSize-5) {
+
+        double center_X = (double) circlePosX;
+        double center_Y = (double) circlePosY;
+        double radius_sq = Math.pow(innerCircleSize / 2, 2);
+        double hitComp = Math.pow((x - center_X), 2) + Math.pow((y - center_Y), 2);
+
+        if (hitComp <= radius_sq) {
             if (y > circlePosY+5 && y < circlePosY + innerCircleSize-5) {
                 System.out.println("SCORE!");
                 return true;
@@ -680,9 +690,9 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     public void mouseDragged(MouseEvent e) {}
     
     public void mouseMoved(MouseEvent e) {
-        int posX = e.getX();
-        int posY = e.getY();
-        System.out.println("X: " + posX + " Y: " + posY);
+        // int posX = e.getX();
+        // int posY = e.getY();
+        // System.out.println("X: " + posX + " Y: " + posY);
 
 
         // if (posY >= gameConsolePanel.getY()-5) {
