@@ -1,6 +1,11 @@
 1.  > void SpeedMath.SpeedMathGraphics.paint(Graphics game)
     >
     >       Draw concentric circles
+    >       Notice that the circlePosX, circlePosY is the center of the circle
+    >       innerCirclePosX = circlePosX-innerCircleSize/2;
+    >       innerCirclePosY = circlePosY-innerCircleSize/2;
+    >       outerCirclePosX = circlePosX-outerCircleSize/2;
+    >       outerCirclePosY = circlePosY-outerCircleSize/2;
     >[How to draw 2 concentric circles? [closed]](https://stackoverflow.com/questions/19773986/how-to-draw-2-concentric-circles)
     
 
