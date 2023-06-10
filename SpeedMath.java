@@ -1,11 +1,14 @@
 package SpeedMath;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.*;
+import java.util.concurrent.CountDownLatch;
+
 
 public class SpeedMath {
     public static void main(String[] args) {
@@ -86,6 +89,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     JSlider qNoteSlider;
     Timer ARtimer;
     Timer noTimer;
+    CountDownLatch latch;
 
     public SpeedMathGraphics(SpeedMathMaps obj) {
         super("SpeedMath - by 41043152");
@@ -312,17 +316,21 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             super();
         }
         public void run() {
+            System.out.println("driver.start();"); //
             innerCircleSize = map.CS;
             outerCircleSize = (int) Math.round(map.CS*2.5);
             int oCS = outerCircleSize;
             endNote = 0;
             
             while (endNote < map.qNotes) {
+                if (ARtimer.isRunning())
+                continue;
                 circlePosX = (int) (Math.random() * (1620 - 200 + 1)) + 200;
                 circlePosY = (int) (Math.random() * (600 - 100 + 1)) + 100;
                 System.out.println("Note " + endNote + " at " + circlePosX + ", " + circlePosY);
                 
                 noteDone = false;
+                ARtimer.start();
                 /* if (outerCircleSize <= innerCircleSize) {
                     noteDone = true;
                     break;
@@ -333,30 +341,42 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
                 // SwingUtilities.invokeAndWait(()->approaching(ARtimer));
                 
                 // this.wait();
-
+                
                 outerCircleSize = oCS;
                 endNote++;
             }
-
             isDone = true;
         }
     }
     
-    private synchronized void gameLoop() {
-        ARtimer = new Timer(150, this::gactionPerformed);
-        driver = new GameDriver();
-        driver.start();
+    private void gameLoop() {
+        innerCircleSize = map.CS;
+        outerCircleSize = (int) Math.round(map.CS*2.5);
+        int oCS = outerCircleSize;
+        endNote = 0;
 
-        while(!driver.isDone && endNote < map.qNotes) {
-            ARtimer.start();
-            try {
-                driver.wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        ARtimer = new Timer(150, this::paintCircleAction);
+        driver = new GameDriver();
+        // driver.start();
+        ARtimer.setDelay(0);
         
-        // SwingUtilities.invokeLater(()->approaching(ARtimer));
+        
+        while(endNote < map.qNotes) {
+            if (ARtimer.isRunning() && !noteDone)
+                continue;
+            outerCircleSize = oCS;
+            noteDone = false;
+            System.out.println("game loop");
+            circlePosX = (int) (Math.random() * (1620 - 200 + 1)) + 200;
+            circlePosY = (int) (Math.random() * (600 - 100 + 1)) + 100;
+            System.out.println("Note " + endNote + " at " + circlePosX + ", " + circlePosY);
+            
+            ARtimer.start();
+            
+            // while(!ARtimer.isRunning())
+            
+            endNote++;
+        }
     }
     
     public void paint(Graphics game) {
@@ -381,6 +401,15 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     public void paintHit(Graphics g, int x, int y) {
         g.setColor(Color.RED);
         g.fillOval(x-10, y-10, 10, 10);
+    }
+
+    public void fadeoHit(Graphics g, Timer t, int x, int y) {
+        t.start();
+        if (!t.isRunning()) {
+            System.out.println("Timer finished");
+            g.setColor(getBackground());
+            g.fillOval(x, y, 10, 10);
+        }
     }
 
     private String pathChooser(int mode) {
@@ -507,16 +536,23 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         }
     }
 
-    public synchronized void gactionPerformed(ActionEvent e) {
+    private void approaching() {
+        ARtimer.start();
+    }
+
+    public void setNoteAction(ActionEvent e) {
+
+    }
+
+    public void paintCircleAction(ActionEvent e) {
         System.out.println(endNote+" is painting...");
-        Timer t = (Timer)e.getSource();
+        
         if (outerCircleSize <= innerCircleSize) {
             noteDone = true;
             // paint(gamePaintArea.getGraphics());
             update(gamePaintArea.getGraphics());
             System.out.print("Done drawing");
-            t.stop();
-            t.notifyAll();
+            ARtimer.stop();
             // return;
         } else {
             noteDone = false;
@@ -526,9 +562,17 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         }
     }
 
+    public void fadeActionPerformed(ActionEvent e) {
+        System.out.println("Fade Timer called");
+        ((Timer) e.getSource()).stop();
+    }
+
     private boolean checkhit (int x, int y) {
+        Timer hitFadeTimer = new Timer(100, this::fadeActionPerformed);
+
         System.out.println("Clicked at X: " + x + " Y: " + y);
         paintHit(gamePaintArea.getGraphics(), x, y);
+        fadeoHit(gamePaintArea.getGraphics(), hitFadeTimer, x, y);
         if (x > circlePosX+5 && x < circlePosX + innerCircleSize-5) {
             if (y > circlePosY+5 && y < circlePosY + innerCircleSize-5) {
                 System.out.println("SCORE!");
@@ -546,7 +590,6 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     public void mouseClicked(MouseEvent e) {
         int x = e.getX();
         int y = e.getY();
-        System.out.println("Clicked at X: " + x + " Y: " + y);
         if (SwingUtilities.isLeftMouseButton(e)) {
             mouse1Count++;
             clickCounter[2].setText(String.valueOf(mouse1Count));
