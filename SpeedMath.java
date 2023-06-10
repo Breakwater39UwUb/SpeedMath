@@ -354,56 +354,37 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
                     continue;
                 }
 
-                circlePosX = (int) (Math.random() * (1520 - 100 + 1)) + 100;
-                circlePosY = (int) (Math.random() * (600 - 80 + 1)) + 80;
-                System.out.println("Note " + endNote + " at " + circlePosX + ", " + circlePosY);
-
-                
-
-                outerCircleSize = oCS;
-                canAddScore = true;
-                noteDone = false;
-                canPaintQ = false;
-                if (endNote == qIndex[q]) {
-                    canPaintQ = true;
-                    q++;
+                if (!ARtimer.isRunning()) {
+                    circlePosX = (int) (Math.random() * (1520 - 100 + 1)) + 100;
+                    circlePosY = (int) (Math.random() * (600 - 80 + 1)) + 80;
+                    System.out.println("Note " + endNote + " at " + circlePosX + ", " + circlePosY);
+                    
+                    outerCircleSize = oCS;
+                    canAddScore = true;
+                    noteDone = false;
+                    canPaintQ = false;
+                    
+                    if (endNote == qIndex[q]) {
+                        canPaintQ = true;
+                        q++;
+                    }
+                    
+                    ARtimer.start();
+                    
+                    endNote++;
                 }
-                
-                ARtimer.start();
-                
-                endNote++;
             }
             isDone = true;
         }
     }
     
     private void gameLoop() {
-        // innerCircleSize = map.CS;
-        // outerCircleSize = (int) Math.round(map.CS*2.5);
-        // int oCS = outerCircleSize;
-        // endNote = 0;
-        ARtimer = new Timer(100, this::paintCircleAction);
+        ARtimer = new Timer(150, this::paintCircleAction);
         ARtimer.setInitialDelay(0);
 
         // isTimerDone = new AtomicBoolean(false);
         driver = new GameDriver();
         driver.start();
-        // approaching();
-        
-        // while(endNote < map.qNotes) {
-            // if (ARtimer.isRunning()) System.out.println("Artimer is running);");
-            // if (ARtimer.isRunning() && !noteDone)
-            //     continue;
-            // outerCircleSize = oCS;
-            // noteDone = false;
-            // circlePosX = (int) (Math.random() * (1620 - 200 + 1)) + 200;
-            // circlePosY = (int) (Math.random() * (600 - 100 + 1)) + 100;
-            // System.out.println("Note " + endNote + " at " + circlePosX + ", " + circlePosY);
-            
-            // ARtimer.start();
-            // while(!ARtimer.isRunning())
-        //     endNote++;
-        // }
     }
     
     public void paint(Graphics game) {
@@ -588,37 +569,18 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         }
     }
 
-    private void approaching() {
-        ARtimer = new Timer(150, this::paintCircleAction);
-        ARtimer.setDelay(0);
-        ARtimer.setInitialDelay(0);
-        ARtimer.start();
-        // SwingUtilities.invokeLater(()->ARtimer.start());
-        // SwingUtilities.invokeLater(new Runnable() {
-        //     @Override
-        //     public void run() {
-        //         ARtimer.start();
-        //     }
-        // });
-    }
-
-    public void setNoteAction(ActionEvent e) {
-
-    }
-
     public void paintCircleAction(ActionEvent e) {
-        System.out.println(endNote + "@" + circlePosX + ", " + circlePosY + " is painting...");
+        System.out.println("Note " + endNote + "@" + circlePosX + ", " + circlePosY + " is painting...");
         
         if (outerCircleSize <= innerCircleSize) {
             noteDone = true;
             // paint(gamePaintArea.getGraphics());
-            // update(gamePaintArea.getGraphics());
+            update(gamePaintArea.getGraphics());
             System.out.println("Done drawing");
             ARtimer.stop();
-            return;
         } else {
             update(gamePaintArea.getGraphics());
-            this.outerCircleSize-=5;
+            this.outerCircleSize-=15;
             noteDone = false;
             // paint(gamePaintArea.getGraphics());
         }
@@ -643,10 +605,8 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         double hitComp = Math.pow((x - center_X), 2) + Math.pow((y - center_Y), 2);
 
         if (hitComp <= radius_sq) {
-            if (y > circlePosY+5 && y < circlePosY + innerCircleSize-5) {
-                System.out.println("SCORE!");
-                return true;
-            }
+            System.out.println("SCORE!");
+            return true;
         }
         return false;
     }
@@ -680,15 +640,12 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     }
     
     public void mousePressed(MouseEvent e) {}
-    
     public void mouseReleased(MouseEvent e) {}
-    
     public void mouseEntered(MouseEvent e) {}
-    
     public void mouseExited(MouseEvent e) {}
-    
     public void mouseDragged(MouseEvent e) {}
-    
+    public void keyTyped(KeyEvent e) {}
+
     public void mouseMoved(MouseEvent e) {
         // int posX = e.getX();
         // int posY = e.getY();
@@ -700,7 +657,6 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         // }
     }
     
-    public void keyTyped(KeyEvent e) {}
     
     public void keyPressed(KeyEvent e) {
         Point pos = gamePaintArea.getMousePosition();
