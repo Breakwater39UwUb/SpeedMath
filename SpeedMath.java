@@ -355,12 +355,12 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         int oCS = outerCircleSize;
         endNote = 0;
 
-        ARtimer = new Timer(150, this::paintCircleAction);
-        driver = new GameDriver();
+        // ARtimer = new Timer(150, this::paintCircleAction);
+        // driver = new GameDriver();
         // driver.start();
-        ARtimer.setDelay(0);
-        
-        
+        // ARtimer.setDelay(0);
+        SwingUtilities.invokeLater(() -> approaching());
+        System.out.println(SwingUtilities.isEventDispatchThread());
         while(endNote < map.qNotes) {
             if (ARtimer.isRunning() && !noteDone)
                 continue;
@@ -537,6 +537,9 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     }
 
     private void approaching() {
+        ARtimer = new Timer(150, this::paintCircleAction);
+        ARtimer.setDelay(0);
+        ARtimer.setInitialDelay(0);
         ARtimer.start();
     }
 
