@@ -412,40 +412,38 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             game.clearRect(0,0,getWidth(), getHeight());
             return;
         }
-
-        innerCirclePosX = circlePosX-innerCircleSize/2;
-        innerCirclePosY = circlePosY-innerCircleSize/2;
-        outerCirclePosX = circlePosX-outerCircleSize/2;
-        outerCirclePosY = circlePosY-outerCircleSize/2;
-        
-        // inner circle
-        game.setColor(Color.CYAN);
-        game.fillOval(innerCirclePosX, innerCirclePosY, innerCircleSize, innerCircleSize);
-        // outer circle
-        game.setColor(new Color(197, 57, 67, 100));
-        game.fillOval(outerCirclePosX, outerCirclePosY, outerCircleSize, outerCircleSize);
         
         if (!canPaintQ) {
-            return;
+            innerCirclePosX = circlePosX-innerCircleSize/2;
+            innerCirclePosY = circlePosY-innerCircleSize/2;
+            outerCirclePosX = circlePosX-outerCircleSize/2;
+            outerCirclePosY = circlePosY-outerCircleSize/2;
+            
+            // inner circle
+            game.setColor(Color.CYAN);
+            game.fillOval(innerCirclePosX, innerCirclePosY, innerCircleSize, innerCircleSize);
+            // outer circle
+            game.setColor(new Color(197, 57, 67, 100));
+            game.fillOval(outerCirclePosX, outerCirclePosY, outerCircleSize, outerCircleSize);
+        } else {            
+            // set 3 answer circles
+            for (int i = 0; i < 3; i++) {
+                innerQCirclePosX[i] = qPosX[i]-innerCircleSize/2;
+                innerQCirclePosY[i] = qPosY-innerCircleSize/2;
+                outerQCirclePosX[i] = qPosX[i]-outerCircleSize/2;
+                outerQCirclePosY[i] = qPosY-outerCircleSize/2;
+            }
+            // outer Qcircle
+            game.setColor(Color.GRAY);
+            game.fillOval(outerQCirclePosX[0], outerQCirclePosY[0], outerCircleSize, outerCircleSize);
+            game.fillOval(outerQCirclePosX[1], outerQCirclePosY[1], outerCircleSize, outerCircleSize);
+            game.fillOval(outerQCirclePosX[2], outerQCirclePosY[2], outerCircleSize, outerCircleSize);
+            // inner Qcircle
+            game.setColor(Color.YELLOW);
+            game.fillOval(innerQCirclePosX[0], innerQCirclePosY[0], innerCircleSize, innerCircleSize);
+            game.fillOval(innerQCirclePosX[1], innerQCirclePosY[1], innerCircleSize, innerCircleSize);
+            game.fillOval(innerQCirclePosX[2], innerQCirclePosY[2], innerCircleSize, innerCircleSize);
         }
-        
-        // set 3 answer circles
-        for (int i = 0; i < 3; i++) {
-            innerQCirclePosX[i] = qPosX[i]-innerCircleSize/2;
-            innerQCirclePosY[i] = qPosY-innerCircleSize/2;
-            outerQCirclePosX[i] = qPosX[i]-outerCircleSize/2;
-            outerQCirclePosY[i] = qPosY-outerCircleSize/2;
-        }
-        // inner Qcircle
-        game.setColor(Color.YELLOW);
-        game.fillOval(innerQCirclePosX[0], innerQCirclePosY[0], innerCircleSize, innerCircleSize);
-        game.fillOval(innerQCirclePosX[1], innerQCirclePosY[1], innerCircleSize, innerCircleSize);
-        game.fillOval(innerQCirclePosX[2], innerQCirclePosY[2], innerCircleSize, innerCircleSize);
-        // outer Qcircle
-        game.setColor(Color.GRAY);
-        game.fillOval(outerQCirclePosX[0], outerQCirclePosY[0], outerCircleSize, outerCircleSize);
-        game.fillOval(outerQCirclePosX[1], outerQCirclePosY[1], outerCircleSize, outerCircleSize);
-        game.fillOval(outerQCirclePosX[2], outerQCirclePosY[2], outerCircleSize, outerCircleSize);
     }
 
     public void paintHit(Graphics g, int x, int y) {
@@ -611,10 +609,10 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         if (outerCircleSize <= innerCircleSize) {
             noteDone = true;
             // paint(gamePaintArea.getGraphics());
-            update(gamePaintArea.getGraphics());
+            // update(gamePaintArea.getGraphics());
             System.out.println("Done drawing");
             ARtimer.stop();
-            // return;
+            return;
         } else {
             update(gamePaintArea.getGraphics());
             this.outerCircleSize-=5;
