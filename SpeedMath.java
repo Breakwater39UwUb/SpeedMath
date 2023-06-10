@@ -342,7 +342,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         }
     }
     
-    private void gameLoop() {
+    private synchronized void gameLoop() {
         ARtimer = new Timer(150, this::gactionPerformed);
         driver = new GameDriver();
         driver.start();
@@ -354,7 +354,6 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            
         }
         
         // SwingUtilities.invokeLater(()->approaching(ARtimer));
@@ -508,7 +507,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         }
     }
 
-    public void gactionPerformed(ActionEvent e) {
+    public synchronized void gactionPerformed(ActionEvent e) {
         System.out.println(endNote+" is painting...");
         Timer t = (Timer)e.getSource();
         if (outerCircleSize <= innerCircleSize) {
