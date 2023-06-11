@@ -33,9 +33,9 @@
         
 
 ### 公式
-        game area 360~1560 border
+        game area X:160~1480, Y:
         圓圈像素大小    CS*8
-        外圈像素大小    CS*3
+        外圈像素大小    CS*4
         縮圈速度        map.AR*50
         answer area is x:, y:800
 
