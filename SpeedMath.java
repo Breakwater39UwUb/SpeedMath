@@ -20,8 +20,8 @@ public class SpeedMath {
 
 class SpeedMathGraphics extends Frame 
 implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, KeyListener {
-    private final int qPosX[] = {200, 900, 1500};
-    private final int qPosY = 850;
+    private int qPosX[] = new int[3];    // = {200, 900, 1500};
+    private int qPosY;
     private int innerCircleSize;
     private int outerCircleSize;
     private int innerCirclePosX, innerCirclePosY;
@@ -39,11 +39,15 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     private int currentNote;
     private int ansNote;
     private int currentQ;
+    private int ansNoteIndex;
+    private float wrongAns[];
     private boolean noteDone;
     private boolean noteIn;
     private boolean canAddScore;
     private boolean isQNote;
+    private boolean isHit;
     private boolean canPaintGame;
+    private boolean exit;
     SpeedMathMaps map;
     GameDriver driver;
 
@@ -71,13 +75,14 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     Label mapEditLabel[];
     Label gameProgress;
     Label gameConsLabel;
+    Label quizDisplay;
     JSlider qNoteSlider;
     Timer ARtimer;
     Timer noTimer;
     AtomicBoolean isTimerDone;
     FontMetrics metrics;
     Font editFont = new Font("Arial", Font.PLAIN, 25);
-    Font quizFont = new Font("Arial", Font.PLAIN, 100);
+    Font quizFont = new Font("Arial", Font.PLAIN, 75);
 
     public SpeedMathGraphics(SpeedMathMaps obj) {
         super("SpeedMath - by 41043152");
@@ -124,6 +129,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         Panel editPageEastPanel = new Panel(new GridLayout(3,1, 0, 100));
         for (int i = 0; i < 8; i++) {
             mapEditLabel[i] = new Label(mapAttributeString[i]);
+            mapEditLabel[i].setForeground(Color.RED);
             mapEditLabel[i].setFont(editFont);
             mapEditLabel[i].setAlignment(Label.LEFT);
             labelPanel.add(mapEditLabel[i]);
@@ -134,7 +140,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             editPage_Panel.add(mapEditField[i]);
         }
         mapEditField[2].setEditable(false);
-        qNoteSlider = new JSlider(0, 30, 0);
+        qNoteSlider = new JSlider(1, 30, 1);
         qNoteSlider.setPaintTrack(true);
         qNoteSlider.setPaintTicks(true);
         qNoteSlider.setPaintLabels(true);
@@ -177,22 +183,31 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         gamePage.addMouseMotionListener(this);
         gamePage.addMouseListener(this);
         
-        rightside = new GridLayout(4, 1, 0, 40);
+        rightside = new GridLayout(6, 1, 0, 40);
         rightPanel = new Panel();
         rightPanel.setPreferredSize(new Dimension(150, this.getHeight()));
         rightPanel.setLayout(rightside);
 
         Panel leftPanel = new Panel();
+        Panel northPanel = new Panel();
         leftPanel.setPreferredSize(new Dimension(100, getHeight()));
+        northPanel.setPreferredSize(new Dimension(getWidth(), 100));
+        northPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 
         clickCounter = new JButton[4];
         gameProgress = new Label("0/0", Label.CENTER);
-        gameProgress.setPreferredSize(new Dimension(200, 50));
-        gameProgress.setFont(new Font("Arial", Font.PLAIN, 50));
+        gameProgress.setPreferredSize(new Dimension(200, 40));
+        gameProgress.setFont(new Font("Arial", Font.PLAIN, 40));
+        quizDisplay = new Label("Quiz will display here.", Label.CENTER);
+        quizDisplay.setPreferredSize(new Dimension(getWidth(), 80));
+        quizDisplay.setFont(quizFont);
+        northPanel.add(quizDisplay);
+
         
         gameConsolePanel = new Panel(new FlowLayout(FlowLayout.LEFT));
         gameConsolePanel.addMouseMotionListener(this);
         gameConsLabel = new Label();
+        gameConsLabel.setFont(editFont);
         gameConsLabel.setText("Type map name to play.");
         gameConsLabel.setPreferredSize(new Dimension(200, 50));
         gameConsoleField = new TextField();
@@ -200,14 +215,17 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         gameConsoleField.setFont(editFont);
         gameConsoleField.setPreferredSize(new Dimension(this.getWidth()-440, 50));
         gameConsoleField.addActionListener(this);
-        play_Return = new JButton("Return Menu");
+        play_Return = new JButton("Menu");
+        play_Return.setFont(editFont);
         play_Return.setName("From Game Return");
         play_Return.setPreferredSize(new Dimension(100, 50));
         play_Return.addActionListener(this);
         startGame = new JButton("Play");
+        startGame.setFont(editFont);
         startGame.setName("Start Game");
         startGame.setPreferredSize(new Dimension(100, 50));
         startGame.addActionListener(this);
+        rightPanel.add(gameProgress);
 
         gameConsolePanel.add(gameConsLabel);
         gameConsolePanel.add(gameConsoleField);
@@ -222,6 +240,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             clickCounter[i].setEnabled(false);
             rightPanel.add(clickCounter[i]);
         }
+        rightPanel.add(new Panel());
         gamePaintArea = new Panel();
         gamePaintArea.addMouseListener(this);
         gamePaintArea.addMouseMotionListener(this);
@@ -229,7 +248,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
 
         gamePage.add(gamePaintArea, BorderLayout.CENTER);
         gamePage.add(gameConsolePanel, BorderLayout.SOUTH);
-        gamePage.add(gameProgress, BorderLayout.NORTH);
+        gamePage.add(northPanel, BorderLayout.NORTH);
         gamePage.add(rightPanel, BorderLayout.EAST);
         gamePage.add(leftPanel, BorderLayout.WEST);
         
@@ -249,13 +268,14 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         addKeyListener(this);
         setVisible(true);
         // gamePaintArea.update(gamePaintArea.getGraphics());
-        update(gamePaintArea.getGraphics());
+        // update(gamePaintArea.getGraphics());
     }
 
     public void setMap(TextField textField) {
         if (textField == mapEditField[0]) {
             this.map.mapName = textField.getText();
-            System.out.println("Get map name from user");
+            mapEditLabel[0].setForeground(Color.GREEN);
+            mapEditLabel[0].setText("Map name (V");
         } else if (textField == mapEditField[1]) {
             int getInt = Integer.parseInt(textField.getText());
             int q;
@@ -268,25 +288,34 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             q = getInt/5;
             this.map.setQNotes(q);
             mapEditField[2].setText(String.valueOf(q));
-            qNoteSlider.setMaximum(q-1);
-            System.out.println("Get total notes from user");
+            qNoteSlider.setMaximum(q);
+            mapEditLabel[1].setForeground(Color.GREEN);
+            mapEditLabel[1].setText("Total notes (V");
+            mapEditLabel[2].setForeground(Color.GREEN);
+            mapEditLabel[2].setText("Quiz notes (V");
         } else if (textField == mapEditField[3]) {
             this.map.CS = Integer.parseInt(textField.getText());
-            System.out.println("Get circle size from user");
+            mapEditLabel[3].setForeground(Color.GREEN);
+            mapEditLabel[3].setText("Circle size (V");
         } else if (textField == mapEditField[4]) {
             this.map.AR = Float.parseFloat(textField.getText());
-            System.out.println("Get approaching rate from user");
+            mapEditLabel[4].setForeground(Color.GREEN);
+            mapEditLabel[4].setText("Approching Rate (V");
         } else if (textField == mapEditField[5]) {
             this.map.setQnA(textField.getText(), qNoteSlider.getValue(), 1);
+            mapEditLabel[5].setForeground(Color.GREEN);
+            mapEditLabel[5].setText("Question (V");
         } else if (textField == mapEditField[6]) {
             this.map.setQnA(textField.getText(), qNoteSlider.getValue(), 2);
+            mapEditLabel[6].setForeground(Color.GREEN);
+            mapEditLabel[6].setText("Answer (V");
         }
     }
 
     public void mapInfo() {
         System.out.println("Map info");
         this.map.info();
-        qNoteSlider.setMaximum(map.qNotes-1);
+        qNoteSlider.setMaximum(map.qNotes);
 
         for (int i = 0; i < 5; i++) {
             mapEditField[i].setText(map.getMapAttribute(i));
@@ -313,17 +342,33 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         private boolean isDone;
         private int oCs;
         private int qIndex[];
+        private int xLeftOffset;
+        private int xRightOffset;
+        private int yUpOffset;
+        private int yDownOffset;
 
         public GameDriver() {
             super();
             setDaemon(false);
             innerCircleSize = map.CS;
-            outerCircleSize = map.CS*3;
+            outerCircleSize = map.CS*4;
+
+            xLeftOffset = gamePaintArea.getX() + outerCircleSize / 2;
+            xRightOffset = gamePaintArea.getWidth() - (outerCircleSize / 2);
+            yUpOffset = gamePaintArea.getX() + outerCircleSize / 2;
+            yDownOffset = gamePaintArea.getHeight() - (outerCircleSize / 2);
+
+            qPosX[0] = xLeftOffset;
+            qPosX[1] = gamePaintArea.getWidth()/2;
+            qPosX[2] = xRightOffset;
+            qPosY = yDownOffset;
     
             innerQCirclePosX = new int [3];
             innerQCirclePosY = new int [3];
             outerQCirclePosX = new int [3];
             outerQCirclePosY = new int [3];
+            wrongAns = new float[3];
+
             currentQ = 0;
             this.oCs = outerCircleSize;
             this.qIndex = getQ();
@@ -334,45 +379,77 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         public void run() {
             System.out.println("driver.start();"); //
 
-            while (currentNote < map.totalNotes) {
+            while (currentNote <= map.totalNotes) {
                 if (ARtimer.isRunning() && !noteDone) {
                     continue;
                 }
 
-                if (noteDone) {
-                    currentNote++;
+                if (exit) {
+                    break;
                 }
-
-                if (isQNote) {
-                    currentQ++;
-                }
-
+                
+                // if (isQNote) {
+                //     currentQ++;
+                // }
+                
                 if (!ARtimer.isRunning()) {
-                    circlePosX = (int) (Math.random() * (1520 - 100 + 1)) + 100;
-                    circlePosY = (int) (Math.random() * (600 - 80 + 1)) + 80;
+                    circlePosX = (int) (Math.random() * (xRightOffset - xLeftOffset + 1)) + xLeftOffset;
+                    circlePosY = (int) (Math.random() * (yDownOffset - yUpOffset + 1)) + yUpOffset;
                     System.out.println("Note " + currentNote + " at " + circlePosX + ", " + circlePosY);
                     
                     outerCircleSize = this.oCs;
                     canAddScore = true;
                     noteDone = false;
                     isQNote = false;
+                    isHit = false;
                     
+                    
+                    quizDisplay.setText(map.quiz[currentQ]);
                     if (currentNote == this.qIndex[currentQ]) {
                         isQNote = true;
-                        // currentQ++;
+                        ansNoteIndex = (int) (Math.random() * 3);
+                        genWrongAnswer();
+                        currentQ++;
                     }
                     
                     ARtimer.start();
-                    // currentNote++;
+                    currentNote++;
                 }
             }
             isDone = true;
             canPaintGame = false;
+            if (exit){
+                resetGame();
+            } else {
+                JOptionPane.showMessageDialog(gamePage, "Game finished", "Map done", JOptionPane.INFORMATION_MESSAGE);
+                resetGame();
+            }
         }
+
+        private void resetGame() {
+            for(int i = 0; i < clickCounter.length; i++) {
+                clickCounter[i].setText("0");
+            }
+            mouse1Count = 0;
+            mouse2Count = 0;
+            key1Count = 0;
+            key2Count = 0;
+            gameProgress.setText("0/0");
+            quizDisplay.setText("Quiz will display here");
+            gameConsoleField.setText("");
+        }
+
+        private void genWrongAnswer() {
+            for (int i = 0; i < 3; i++) {
+                wrongAns[i] = (int) map.ans[currentQ] + (int) (Math.random() * (30-2+1)) + 1;
+            }
+        }
+
     }
     
     private void gameLoop() {
-        ARtimer = new Timer(150, this::paintCircleAction);
+        // int speed = map.AR * 50;
+        ARtimer = new Timer(100, this::paintCircleAction);
         ARtimer.setInitialDelay(0);
 
         driver = new GameDriver();
@@ -380,34 +457,31 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     }
     
     public void paint(Graphics game) {
-        if (!canPaintGame)
+        if (!canPaintGame){
+            System.out.println("Can't paint");
             return;
+        }
 
-        if (noteDone) {
+        if (noteDone || isHit) {
+            System.out.println("Note done, clearing");
             game.clearRect(0,0,getWidth(), getHeight());
             return;
         }
 
-        Rectangle rect = new Rectangle(gamePaintArea.getX(), gamePaintArea.getY(), gamePaintArea.getWidth(), gamePaintArea.getHeight());
-        metrics = game.getFontMetrics(quizFont);
-        int x = rect.x + (rect.width - metrics.stringWidth(map.quiz[currentQ])) / 2;
-        game.setFont(quizFont);
-        game.drawString(map.quiz[currentQ], x, 200);
-        
         if (!isQNote) {
             innerCirclePosX = circlePosX-innerCircleSize/2;
             innerCirclePosY = circlePosY-innerCircleSize/2;
             outerCirclePosX = circlePosX-outerCircleSize/2;
             outerCirclePosY = circlePosY-outerCircleSize/2;
             
-            // inner circle
-            game.setColor(Color.CYAN);
-            game.fillOval(innerCirclePosX, innerCirclePosY, innerCircleSize, innerCircleSize);
             // outer circle
             game.setColor(new Color(197, 57, 67, 100));
             game.fillOval(outerCirclePosX, outerCirclePosY, outerCircleSize, outerCircleSize);
+            // inner circle
+            game.setColor(Color.CYAN);
+            game.fillOval(innerCirclePosX, innerCirclePosY, innerCircleSize, innerCircleSize);
             // draw the string in the center of x axis
-        } else {
+        } else {            
             // set 3 answer circles
             for (int i = 0; i < 3; i++) {
                 innerQCirclePosX[i] = qPosX[i]-innerCircleSize/2;
@@ -425,19 +499,40 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             game.fillOval(innerQCirclePosX[0], innerQCirclePosY[0], innerCircleSize, innerCircleSize);
             game.fillOval(innerQCirclePosX[1], innerQCirclePosY[1], innerCircleSize, innerCircleSize);
             game.fillOval(innerQCirclePosX[2], innerQCirclePosY[2], innerCircleSize, innerCircleSize);
+
+            paintAns(game);
         }
     }
 
     public void paintHit(Graphics g, Timer t, int x, int y) {
-        t.start();
         while (t.isRunning()) {
+            System.out.println("Painting hit point " + x + " " + y);
             g.setColor(Color.RED);
-            g.fillOval(x-10, y-10, 10, 10);
+            g.fillOval(x, y, 10, 10);
         }
-            
-        System.out.println("Timer finished");
         g.setColor(getBackground());
-        g.fillOval(x-10, y-10, 10, 10);
+        g.fillOval(x, y, 10, 10);
+    }
+    
+    private void paintAns(Graphics game) {
+        // if (currentQ > map.qNotes){
+        //     System.out.println("currentQ > map.qNotes");
+        //     return;  
+        // }
+        System.out.println("Painting Answers");
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>[" + currentQ + "]" + ">>>>>>>>>>>" + map.ans[currentQ]);
+        metrics = game.getFontMetrics(quizFont);
+        game.setColor(Color.MAGENTA);
+        game.setFont(quizFont);
+
+        for (int i = 0; i < 3; i++) {
+            int x = qPosX[i] - (metrics.stringWidth(map.quiz[currentQ]) / 2);
+            if (i == ansNoteIndex) {
+                game.drawString(String.valueOf(map.ans[currentQ]), x, qPosY - innerCircleSize*4);
+            }else{
+                game.drawString(String.valueOf(wrongAns[i]), x, qPosY - innerCircleSize*4);
+            }
+        }
     }
 
     private String pathChooser(int mode) {
@@ -472,9 +567,12 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     
     public void stateChanged(ChangeEvent e) {
         int qIndex = qNoteSlider.getValue();
+        mapEditLabel[5].setForeground(Color.RED);;
         mapEditLabel[5].setText("Question " + String.valueOf(qIndex));
-        mapEditLabel[6].setText("Answer " + String.valueOf(qIndex));
         mapEditField[5].setText(map.quiz[qIndex]);
+        
+        mapEditLabel[6].setForeground(Color.RED);;
+        mapEditLabel[6].setText("Answer " + String.valueOf(qIndex));
         mapEditField[6].setText(String.valueOf(map.ans[qIndex]));
         System.out.print(qIndex + ">>>>>" + map.quiz[qIndex]);
         System.out.println(" = " + map.ans[qIndex]);
@@ -526,6 +624,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         if (clickedJButton == play_Return) {
             System.out.println("Return to main page");
             this.setFocusable(false);
+            exit = true;
             mainLayout.show(this, mainPage.getName());
         }
         if (clickedJButton == startGame) {
@@ -564,7 +663,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             } catch (IOException e1) {e1.printStackTrace();}
         }
     }
-
+    
     public void paintCircleAction(ActionEvent e) {
         System.out.println("Note " + currentNote + "@" + circlePosX + ", " + circlePosY + " is painting...");
         
@@ -576,40 +675,41 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             ARtimer.stop();
         } else {
             update(gamePaintArea.getGraphics());
-            this.outerCircleSize-=15;
+            this.outerCircleSize -= 20;   // AR * 3
             noteDone = false;
         }
     }
-
+    
     public void fadeActionPerformed(ActionEvent e) {}
-
+    
     private boolean checkhit (int x, int y) {
         System.out.println("Clicked at X: " + x + " Y: " + y);
-
-        Timer hitFadeTimer = new Timer(50, this::fadeActionPerformed);
+        
+        Timer hitFadeTimer = new Timer(100, this::fadeActionPerformed);
         hitFadeTimer.setRepeats(false);
+        hitFadeTimer.start();
         paintHit(gamePaintArea.getGraphics(), hitFadeTimer, x, y);
-
+        
         double center_X = (double) circlePosX;
         double center_Y = (double) circlePosY;
         double radius_sq = Math.pow(innerCircleSize / 2, 2);
         double hitComp = Math.pow((x - center_X), 2) + Math.pow((y - center_Y), 2);
-
+        
         if (hitComp <= radius_sq) {
             System.out.println("SCORE!");
             return true;
         }
-
+        
         if (isQNote) {
             for (int i = 0; i < 3; i++) {
                 hitComp = Math.pow((x - qPosX[i]), 2) + Math.pow((y - qPosY), 2);
                 if (hitComp <= radius_sq)
-                    return true;
+                return true;
             }
         }
         return false;
     }
-
+    
     private void changescore() {
         if (canAddScore && !noteDone) {
             earnScore++;
@@ -625,6 +725,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             mouse1Count++;
             clickCounter[2].setText(String.valueOf(mouse1Count));
             if (checkhit(x, y)) {
+                isHit = true;
                 changescore();
             }
         }
@@ -632,6 +733,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             mouse2Count++;
             clickCounter[3].setText(String.valueOf(mouse2Count));
             if (checkhit(x, y)) {
+                isHit = true;
                 changescore();
             }
         }
@@ -643,27 +745,27 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     public void mouseExited(MouseEvent e) {}
     public void mouseDragged(MouseEvent e) {}
     public void keyTyped(KeyEvent e) {}
-
+    
     public void mouseMoved(MouseEvent e) {
         // int posX = e.getX();
         // int posY = e.getY();
         // System.out.println("X: " + posX + " Y: " + posY);
-
-
+        
+        
         // if (posY >= gameConsolePanel.getY()-5) {
-        //     System.out.println("Leaving game area: ");
-        // }
+            //     System.out.println("Leaving game area: ");
+            // }
     }
-    
-    
+        
+        
     public void keyPressed(KeyEvent e) {
         Point pos = gamePaintArea.getMousePosition();
-        // not working
         if (e.getKeyChar() == 'Z' || e.getKeyChar() == 'z') {
             System.out.println("keyPressed> " + e.getKeyChar() + "at " + pos.getX()+", "+pos.getY());
             this.key1Count++;
             this.clickCounter[0].setText(String.valueOf(this.key1Count));
             if(checkhit((int)pos.getX(), (int)pos.getY())) {
+                isHit = true;
                 changescore();
             }
         }
@@ -672,6 +774,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             this.key2Count++;
             this.clickCounter[1].setText(String.valueOf(this.key2Count));
             if(checkhit((int)pos.getX(), (int)pos.getY())) {
+                isHit = true;
                 changescore();
             }
         }

@@ -68,8 +68,8 @@ class SpeedMathMaps implements Serializable {
 
     protected void setQNotes(int number) {
         qNotes = number;
-        quiz = new String[number];
-        ans = new float[number];
+        quiz = new String[number+1];
+        ans = new float[number+1];
     }
 
     protected void setQnA(String str, int index, int type) {
