@@ -36,13 +36,14 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     private int mouse2Count;
     private int fullScore;
     private int earnScore;
-    private int endNote;
+    private int currentNote;
     private int ansNote;
-    private int currentQNote;
+    private int currentQ;
     private boolean noteDone;
     private boolean noteIn;
     private boolean canAddScore;
     private boolean isQNote;
+    private boolean canPaintGame;
     SpeedMathMaps map;
     GameDriver driver;
 
@@ -309,50 +310,64 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     }
 
     class GameDriver extends Thread {
-        boolean isDone;
+        private boolean isDone;
+        private int oCs;
+        private int qIndex[];
+
         public GameDriver() {
             super();
             setDaemon(false);
-        }
-        public void run() {
-            System.out.println("driver.start();"); //
             innerCircleSize = map.CS;
             outerCircleSize = map.CS*3;
-
+    
             innerQCirclePosX = new int [3];
             innerQCirclePosY = new int [3];
             outerQCirclePosX = new int [3];
             outerQCirclePosY = new int [3];
-            currentQNote = 0;
-            int oCS = outerCircleSize;
-            int qIndex[] = getQ();
+            currentQ = 0;
+            this.oCs = outerCircleSize;
+            this.qIndex = getQ();
+            noteDone = false;
+            canPaintGame = true;
+            currentNote = 0;
+        }
+        public void run() {
+            System.out.println("driver.start();"); //
 
-            endNote = 0;
-            while (endNote < map.totalNotes) {
+            while (currentNote < map.totalNotes) {
                 if (ARtimer.isRunning() && !noteDone) {
                     continue;
+                }
+
+                if (noteDone) {
+                    currentNote++;
+                }
+
+                if (isQNote) {
+                    currentQ++;
                 }
 
                 if (!ARtimer.isRunning()) {
                     circlePosX = (int) (Math.random() * (1520 - 100 + 1)) + 100;
                     circlePosY = (int) (Math.random() * (600 - 80 + 1)) + 80;
-                    System.out.println("Note " + endNote + " at " + circlePosX + ", " + circlePosY);
+                    System.out.println("Note " + currentNote + " at " + circlePosX + ", " + circlePosY);
                     
-                    outerCircleSize = oCS;
+                    outerCircleSize = this.oCs;
                     canAddScore = true;
                     noteDone = false;
                     isQNote = false;
                     
-                    if (endNote == qIndex[currentQNote]) {
+                    if (currentNote == this.qIndex[currentQ]) {
                         isQNote = true;
-                        currentQNote++;
+                        // currentQ++;
                     }
                     
                     ARtimer.start();
-                    endNote++;
+                    // currentNote++;
                 }
             }
             isDone = true;
+            canPaintGame = false;
         }
     }
     
@@ -365,17 +380,21 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     }
     
     public void paint(Graphics game) {
+        if (!canPaintGame)
+            return;
+
         if (noteDone) {
             game.clearRect(0,0,getWidth(), getHeight());
             return;
         }
+
+        Rectangle rect = new Rectangle(gamePaintArea.getX(), gamePaintArea.getY(), gamePaintArea.getWidth(), gamePaintArea.getHeight());
+        metrics = game.getFontMetrics(quizFont);
+        int x = rect.x + (rect.width - metrics.stringWidth(map.quiz[currentQ])) / 2;
+        game.setFont(quizFont);
+        game.drawString(map.quiz[currentQ], x, 200);
         
         if (!isQNote) {
-            Rectangle rect = new Rectangle(gamePaintArea.getX(), gamePaintArea.getY(), gamePaintArea.getWidth(), gamePaintArea.getHeight());
-            metrics = game.getFontMetrics(quizFont);
-            int x = rect.x + (rect.width - metrics.stringWidth(map.quiz[currentQNote])) / 2;
-            game.setFont(quizFont);
-            game.drawString(map.quiz[currentQNote], x, 200);
             innerCirclePosX = circlePosX-innerCircleSize/2;
             innerCirclePosY = circlePosY-innerCircleSize/2;
             outerCirclePosX = circlePosX-outerCircleSize/2;
@@ -389,11 +408,6 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             game.fillOval(outerCirclePosX, outerCirclePosY, outerCircleSize, outerCircleSize);
             // draw the string in the center of x axis
         } else {
-            Rectangle rect = new Rectangle(gamePaintArea.getX(), gamePaintArea.getY(), gamePaintArea.getWidth(), gamePaintArea.getHeight());
-            metrics = game.getFontMetrics(quizFont);
-            int x = rect.x + (rect.width - metrics.stringWidth(map.quiz[currentQNote-1])) / 2;
-            game.setFont(quizFont);
-            game.drawString(map.quiz[currentQNote-1], x, 200);
             // set 3 answer circles
             for (int i = 0; i < 3; i++) {
                 innerQCirclePosX[i] = qPosX[i]-innerCircleSize/2;
@@ -552,7 +566,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     }
 
     public void paintCircleAction(ActionEvent e) {
-        System.out.println("Note " + endNote + "@" + circlePosX + ", " + circlePosY + " is painting...");
+        System.out.println("Note " + currentNote + "@" + circlePosX + ", " + circlePosY + " is painting...");
         
         if (outerCircleSize <= innerCircleSize) {
             noteDone = true;
