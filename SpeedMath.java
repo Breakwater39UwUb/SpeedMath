@@ -41,6 +41,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     private int currentQ;
     private int ansNoteIndex;
     private float wrongAns[];
+    private float approachingSpeed;
     private boolean noteDone;
     private boolean noteIn;
     private boolean canAddScore;
@@ -339,7 +340,6 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     }
 
     class GameDriver extends Thread {
-        private boolean isDone;
         private int oCs;
         private int qIndex[];
         private int xLeftOffset;
@@ -350,8 +350,8 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         public GameDriver() {
             super();
             setDaemon(false);
-            innerCircleSize = map.CS;
-            outerCircleSize = map.CS*4;
+            innerCircleSize = map.CS * 8;
+            outerCircleSize = innerCircleSize * 4;
 
             xLeftOffset = gamePaintArea.getX() + outerCircleSize / 2;
             xRightOffset = gamePaintArea.getWidth() - (outerCircleSize / 2);
@@ -368,13 +368,14 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             outerQCirclePosX = new int [3];
             outerQCirclePosY = new int [3];
             wrongAns = new float[3];
+            approachingSpeed = map.AR * 3;
 
-            currentQ = 0;
+            currentQ = 1;
             this.oCs = outerCircleSize;
             this.qIndex = getQ();
             noteDone = false;
             canPaintGame = true;
-            currentNote = 0;
+            currentNote = 1;
         }
         public void run() {
             System.out.println("driver.start();"); //
@@ -388,14 +389,17 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
                     break;
                 }
                 
-                // if (isQNote) {
-                //     currentQ++;
-                // }
-                
                 if (!ARtimer.isRunning()) {
                     circlePosX = (int) (Math.random() * (xRightOffset - xLeftOffset + 1)) + xLeftOffset;
                     circlePosY = (int) (Math.random() * (yDownOffset - yUpOffset + 1)) + yUpOffset;
                     System.out.println("Note " + currentNote + " at " + circlePosX + ", " + circlePosY);
+                    if (noteDone){
+                        currentNote++;
+                    }
+                    if (isQNote && noteDone && currentNote < this.qIndex[qIndex.length-1]) {
+                        currentQ++;
+                    }
+
                     
                     outerCircleSize = this.oCs;
                     canAddScore = true;
@@ -409,14 +413,14 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
                         isQNote = true;
                         ansNoteIndex = (int) (Math.random() * 3);
                         genWrongAnswer();
-                        currentQ++;
+                        // currentQ++;
                     }
                     
                     ARtimer.start();
-                    currentNote++;
+                    // currentNote++;
                 }
             }
-            isDone = true;
+            ARtimer.stop();
             canPaintGame = false;
             if (exit){
                 resetGame();
@@ -434,6 +438,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             mouse2Count = 0;
             key1Count = 0;
             key2Count = 0;
+            earnScore = 0;
             gameProgress.setText("0/0");
             quizDisplay.setText("Quiz will display here");
             gameConsoleField.setText("");
@@ -448,11 +453,8 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     }
     
     private void gameLoop() {
-        // int speed = map.AR * 50;
         ARtimer = new Timer(100, this::paintCircleAction);
         ARtimer.setInitialDelay(0);
-
-        driver = new GameDriver();
         driver.start();
     }
     
@@ -629,8 +631,9 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         }
         if (clickedJButton == startGame) {
             System.out.println("Click the cIrClEs!");
+            driver = new GameDriver();
+            driver.resetGame();
             gameProgress.setText(String.valueOf(earnScore)+"/"+String.valueOf(fullScore));
-            // approaching();
             gameLoop();
             this.gameConsoleField.transferFocusUpCycle();
         }
@@ -675,7 +678,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             ARtimer.stop();
         } else {
             update(gamePaintArea.getGraphics());
-            this.outerCircleSize -= 20;   // AR * 3
+            this.outerCircleSize -= 2*approachingSpeed;   // AR * 3
             noteDone = false;
         }
     }
@@ -783,11 +786,11 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     public void keyReleased(KeyEvent e) {}
 
     private int[] getQ() {
-        int q[] = new int[map.qNotes];
-        int m = -1;
-        for (int i = 0; i < map.qNotes; i++) {
-            m+=5;
+        int q[] = new int[map.qNotes+1];
+        int m = 0;
+        for (int i = 0; i < map.qNotes+1; i++) {
             q[i] = m;
+            m+=5;
         }
         return q;
     }
