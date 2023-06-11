@@ -40,6 +40,8 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     private int ansNote;
     private int currentQ;
     private int ansNoteIndex;
+    private int missTimer;
+    private int hitFadeTimer;
     private float wrongAns[];
     private float approachingSpeed;
     private boolean noteDone;
@@ -47,6 +49,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     private boolean canAddScore;
     private boolean isQNote;
     private boolean isHit;
+    private boolean isMiss;
     private boolean canPaintGame;
     private boolean exit;
     SpeedMathMaps map;
@@ -79,11 +82,11 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     Label quizDisplay;
     JSlider qNoteSlider;
     Timer ARtimer;
-    Timer noTimer;
     AtomicBoolean isTimerDone;
     FontMetrics metrics;
     Font editFont = new Font("Arial", Font.PLAIN, 25);
     Font quizFont = new Font("Arial", Font.PLAIN, 75);
+    Point hitPosition;
 
     public SpeedMathGraphics(SpeedMathMaps obj) {
         super("SpeedMath - by 41043152");
@@ -268,6 +271,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         addComponentListener(new resizeListener());
         addKeyListener(this);
         setVisible(true);
+
         // gamePaintArea.update(gamePaintArea.getGraphics());
         // update(gamePaintArea.getGraphics());
     }
@@ -469,6 +473,12 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             game.clearRect(0,0,getWidth(), getHeight());
             return;
         }
+        
+        if (isMiss) {
+            System.out.println("**************Painting miss affect area");
+            game.setColor(Color.RED);
+            game.fillRect(0, 0, getWidth(), getHeight());
+        }
 
         if (!isQNote) {
             innerCirclePosX = circlePosX-innerCircleSize/2;
@@ -504,25 +514,30 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
 
             paintAns(game);
         }
+
+        // if (hitFadeTimer.isRunning() && hitPosition != null) {
+        //     game.setColor(Color.RED);
+        //     game.fillOval(hitPosition.x-5, hitPosition.y-5, 10, 10);
+        // } else if (hitPosition != null){
+        //     game.setColor(getBackground());
+        //     game.fillOval(hitPosition.x-5, hitPosition.y-5, 10, 10);
+        // }
     }
 
-    public void paintHit(Graphics g, Timer t, int x, int y) {
+    private void paintHit(Graphics g, Timer t, int x, int y) {
+        // currently not working
         while (t.isRunning()) {
-            System.out.println("Painting hit point " + x + " " + y);
+            // System.out.println("Painting hit point " + x + " " + y);
             g.setColor(Color.RED);
-            g.fillOval(x, y, 10, 10);
+            g.fillOval(x-5, y-5, 10, 10);
         }
         g.setColor(getBackground());
-        g.fillOval(x, y, 10, 10);
+        g.fillOval(x-5, y-5, 10, 10);
     }
     
     private void paintAns(Graphics game) {
-        // if (currentQ > map.qNotes){
-        //     System.out.println("currentQ > map.qNotes");
-        //     return;  
-        // }
-        System.out.println("Painting Answers");
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>[" + currentQ + "]" + ">>>>>>>>>>>" + map.ans[currentQ]);
+        // System.out.println("Painting Answers");
+        // System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>[" + currentQ + "]" + ">>>>" + map.ans[currentQ]);
         metrics = game.getFontMetrics(quizFont);
         game.setColor(Color.MAGENTA);
         game.setFont(quizFont);
@@ -669,7 +684,16 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     
     public void paintCircleAction(ActionEvent e) {
         System.out.println("Note " + currentNote + "@" + circlePosX + ", " + circlePosY + " is painting...");
-        
+        if (isMiss) {
+            missTimer++;
+        }
+        if (missTimer == 2) {
+            missTimer = 0;
+            isMiss = false;
+        }
+        if (hitFadeTimer == 4) {
+            
+        }
         if (outerCircleSize <= innerCircleSize) {
             noteDone = true;
             canAddScore = false;
@@ -678,7 +702,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             ARtimer.stop();
         } else {
             update(gamePaintArea.getGraphics());
-            this.outerCircleSize -= 2*approachingSpeed;   // AR * 3
+            this.outerCircleSize -= approachingSpeed;   // AR * 3
             noteDone = false;
         }
     }
@@ -687,11 +711,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     
     private boolean checkhit (int x, int y) {
         System.out.println("Clicked at X: " + x + " Y: " + y);
-        
-        Timer hitFadeTimer = new Timer(100, this::fadeActionPerformed);
-        hitFadeTimer.setRepeats(false);
-        hitFadeTimer.start();
-        paintHit(gamePaintArea.getGraphics(), hitFadeTimer, x, y);
+        // hitFadeTimer.start();
         
         double center_X = (double) circlePosX;
         double center_Y = (double) circlePosY;
@@ -704,15 +724,14 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         }
         
         if (isQNote) {
-            for (int i = 0; i < 3; i++) {
-                hitComp = Math.pow((x - qPosX[i]), 2) + Math.pow((y - qPosY), 2);
-                if (hitComp <= radius_sq)
+            hitComp = Math.pow((x - qPosX[ansNoteIndex]), 2) + Math.pow((y - qPosY), 2);
+            if (hitComp <= radius_sq)
                 return true;
-            }
         }
+        isMiss = true;
         return false;
     }
-    
+
     private void changescore() {
         if (canAddScore && !noteDone) {
             earnScore++;
@@ -748,26 +767,15 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     public void mouseExited(MouseEvent e) {}
     public void mouseDragged(MouseEvent e) {}
     public void keyTyped(KeyEvent e) {}
-    
-    public void mouseMoved(MouseEvent e) {
-        // int posX = e.getX();
-        // int posY = e.getY();
-        // System.out.println("X: " + posX + " Y: " + posY);
-        
-        
-        // if (posY >= gameConsolePanel.getY()-5) {
-            //     System.out.println("Leaving game area: ");
-            // }
-    }
-        
+    public void mouseMoved(MouseEvent e) {}
         
     public void keyPressed(KeyEvent e) {
-        Point pos = gamePaintArea.getMousePosition();
+        hitPosition = gamePaintArea.getMousePosition();
         if (e.getKeyChar() == 'Z' || e.getKeyChar() == 'z') {
-            System.out.println("keyPressed> " + e.getKeyChar() + "at " + pos.getX()+", "+pos.getY());
+            System.out.println("keyPressed> " + e.getKeyChar() + "at " + hitPosition.x +", "+ hitPosition.y);
             this.key1Count++;
             this.clickCounter[0].setText(String.valueOf(this.key1Count));
-            if(checkhit((int)pos.getX(), (int)pos.getY())) {
+            if(checkhit(hitPosition.x, hitPosition.y)) {
                 isHit = true;
                 changescore();
             }
@@ -776,7 +784,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
             System.out.println("keyPressed> " + e.getKeyChar());
             this.key2Count++;
             this.clickCounter[1].setText(String.valueOf(this.key2Count));
-            if(checkhit((int)pos.getX(), (int)pos.getY())) {
+            if(checkhit(hitPosition.x, hitPosition.y)) {
                 isHit = true;
                 changescore();
             }
