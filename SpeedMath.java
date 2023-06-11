@@ -396,9 +396,9 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
                 if (!ARtimer.isRunning()) {
                     circlePosX = (int) (Math.random() * (xRightOffset - xLeftOffset + 1)) + xLeftOffset;
                     circlePosY = (int) (Math.random() * (yDownOffset - yUpOffset + 1)) + yUpOffset;
-                    System.out.println("Note " + currentNote + " at " + circlePosX + ", " + circlePosY);
                     if (noteDone){
                         currentNote++;
+                        System.out.println("Note " + currentNote + " at " + circlePosX + ", " + circlePosY);
                     }
                     if (isQNote && noteDone && currentNote < this.qIndex[qIndex.length-1]) {
                         currentQ++;
@@ -683,7 +683,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     }
     
     public void paintCircleAction(ActionEvent e) {
-        System.out.println("Note " + currentNote + "@" + circlePosX + ", " + circlePosY + " is painting...");
+        // System.out.println("Note " + currentNote + "@" + circlePosX + ", " + circlePosY + " is painting...");
         if (isMiss) {
             missTimer++;
         }
