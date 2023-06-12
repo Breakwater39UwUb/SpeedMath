@@ -43,23 +43,36 @@
 ## 編輯器
 <pre>
     每個輸入欄皆需要按下 Enter
+    未被紀錄的欄位會以紅字呈現
+    已被紀錄的欄位會以綠字呈現
+    
+    <b>Texfield Label  : Feature</b>
     Map name        : 決定存檔名稱
-    Total notes     : 總圓圈數, 包含 quiz note
+    Total notes     : 總圓圈數
     Quiz notes      : 特殊圓圈數
     Circle size     : 圓圈大小 1 ~ 10
-    Approaching rate: 縮圈速度 1 ~ 10
+    Approaching rate: 縮圈速度 1.0 ~ 10.0
     Question        : 數學題目, 字串輸入
-    Answer  : 上述題目答案, 以浮點數輸入
+    Answer          : 題目答案, 以浮點數格式輸入字串
+    qNote slider    : 在各題目間選擇, 顯示
+
+    補充解釋
+        檔名會加上副檔名.SPMbeatmap儲存
+        總圓圈數, 也稱為節拍, 包含 quiz note
+        答案圈, quiz note, 為總拍數的 1/5 倍
+        圓圈大小只決定內圈大小
+        一圈分為內圈與縮圈, 內圈為設定的固定大小
+        縮圈為內圈的 4 倍, 且會逐漸所小至內圈大小
+        縮圈 <= 內圈時, 此拍即結束
+            圓圈像素大小    CS*8   pixels
+            外圈像素大小    CS*8*4 pixels
+        縮圈速度為  AR*3, 每次繪圖更新縮圈所減少的像素寬度
+        滑動 scrollbar 會在題目間切換, 藉此顯示與編輯
+
+        答案圈顯示為固定區域
+        三個答案圈的 X 座標分別為 gamePaintArea 的三分之一
+                   Y 座標為 gamePaintArea 高度對齊圓圈大小
+
+        普通圈的顯示區域為 gamePaintArea 高度對齊圓圈大小
+            X: 1670 Y: 892  
 </pre>
-        
-
-### 公式
-        game area X:160~1480, Y:
-        圓圈像素大小    CS*8
-        外圈像素大小    CS*4
-        縮圈速度        map.AR*50
-        answer area is x:, y:800
-
-        qNote   totalNotes/5, no round
-        qNote Position  X:200, 900, 1500
-                        Y:850
