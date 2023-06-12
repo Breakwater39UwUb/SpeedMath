@@ -56,6 +56,12 @@
     Answer          : 題目答案, 以浮點數格式輸入字串
     qNote slider    : 在各題目間選擇, 顯示
 
+    右側按鈕
+        Load Map    : 讀取地圖檔案, 只顯示 .SPMbeatmap 檔
+                      讀取即設定為遊戲地圖
+        Save Map    : 儲存地圖檔案, 檔名由輸入欄決定
+        Return Menu : 返回主頁
+
     補充解釋
         檔名會加上副檔名.SPMbeatmap儲存
         總圓圈數, 也稱為節拍, 包含 quiz note
