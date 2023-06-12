@@ -15,13 +15,18 @@
 
 ## 遊戲
 <pre>
-    Play 按鈕       開始遊戲
-    Menu 按鈕       返回主頁
-    文字輸入欄       輸入地圖名稱
+    底部
+        Play 按鈕       開始遊戲
+        Menu 按鈕       返回主頁
+        文字輸入欄       輸入地圖名稱
+    右側
+        分數標籤        顯示總拍數與得分比
+        直列4按鈕       以標籤顯示點擊次數
+    頂部
+        題目標籤        顯示題目
 
     按下鍵盤 X, Y 鍵與滑鼠左右鍵的次數被記錄
     並顯示在右側 4 個按鈕的標籤上
-    分數顯示在此排按鈕上
     <strike>按下的位置會被紅圓點標示 Not working</strike>
         
     點擊位置於圈內會記錄分數, 否則判斷為 Miss
@@ -36,16 +41,16 @@
 </pre>
 
 ## 編輯器
-        按 Editor 按鈕
-        每個輸入欄皆需要按下 Enter
-        Map name        : 決定存檔名稱
-        Total notes     : 總圓圈數, 包含 quiz note
-        Quiz notes      : 特殊圓圈數
-        Circle size     : 圓圈大小 1 ~ 10
-        Approaching rate: 縮圈速度 1 ~ 10
-        Question        : 數學題目, 字串輸入
-        Answer  : 上述題目答案, 以浮點數輸入
-
+<pre>
+    每個輸入欄皆需要按下 Enter
+    Map name        : 決定存檔名稱
+    Total notes     : 總圓圈數, 包含 quiz note
+    Quiz notes      : 特殊圓圈數
+    Circle size     : 圓圈大小 1 ~ 10
+    Approaching rate: 縮圈速度 1 ~ 10
+    Question        : 數學題目, 字串輸入
+    Answer  : 上述題目答案, 以浮點數輸入
+</pre>
         
 
 ### 公式
