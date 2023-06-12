@@ -37,7 +37,6 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     private int fullScore;
     private int earnScore;
     private int currentNote;
-    private int ansNote;
     private int currentQ;
     private int ansNoteIndex;
     private int missTimer;
@@ -45,7 +44,6 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     private float wrongAns[];
     private float approachingSpeed;
     private boolean noteDone;
-    private boolean noteIn;
     private boolean canAddScore;
     private boolean isQNote;
     private boolean isHit;
@@ -92,8 +90,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         super("SpeedMath - by 41043152");
         setSize(1920, 1080);
         setMinimumSize(new Dimension(1920, 1080));
-        // setMaximumSize(new Dimension(1920, 1080));
-        // setResizable(false);
+        setResizable(false);
         setLayout(new CardLayout());
         setBackground(Color.LIGHT_GRAY);
         this.map = obj;
@@ -271,9 +268,6 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
         addComponentListener(new resizeListener());
         addKeyListener(this);
         setVisible(true);
-
-        // gamePaintArea.update(gamePaintArea.getGraphics());
-        // update(gamePaintArea.getGraphics());
     }
 
     public void setMap(TextField textField) {
@@ -514,14 +508,6 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
 
             paintAns(game);
         }
-
-        // if (hitFadeTimer.isRunning() && hitPosition != null) {
-        //     game.setColor(Color.RED);
-        //     game.fillOval(hitPosition.x-5, hitPosition.y-5, 10, 10);
-        // } else if (hitPosition != null){
-        //     game.setColor(getBackground());
-        //     game.fillOval(hitPosition.x-5, hitPosition.y-5, 10, 10);
-        // }
     }
 
     private void paintHit(Graphics g, Timer t, int x, int y) {
@@ -536,8 +522,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     }
     
     private void paintAns(Graphics game) {
-        // System.out.println("Painting Answers");
-        // System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>[" + currentQ + "]" + ">>>>" + map.ans[currentQ]);
+        // System.out.println("Painting Answer>>>>>>>>>>>>>>>[" + currentQ + "]" + ">>>>" + map.ans[currentQ]);
         metrics = game.getFontMetrics(quizFont);
         game.setColor(Color.MAGENTA);
         game.setFont(quizFont);
@@ -812,8 +797,7 @@ implements ActionListener, ChangeListener, MouseListener, MouseMotionListener, K
     class resizeListener extends ComponentAdapter {
         public void componentResized(ComponentEvent e) {
             Component component = (Component)e.getSource();
-            // paint(getGraphics());
-            System.out.println("Resizing " + component.getSize());
+            // System.out.println("Resizing " + component.getSize());
         }
     }
 }
