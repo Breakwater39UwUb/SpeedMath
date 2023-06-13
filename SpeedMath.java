@@ -3,6 +3,7 @@
 * Function : Main class and main function
 * Author   : 許書和 41043152
 * DateTime : First commits on Jun 5, 2023
+* Last modified : Jun 12, 2023
 * Description : Java final term project
 * Additional file: 41043152_Ref.MD
 */
