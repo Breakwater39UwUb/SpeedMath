@@ -1,5 +1,14 @@
+/*
+* Filename : SpeedMathMath.java
+* Function : Data class for main class
+* Author   : 許書和 41043152
+* DateTime : First commits on Jun 5, 2023
+* Description : Java final term project
+* Additional file: 41043152_Log.log
+                   41043152_Ref.MD
+*/
 package SpeedMath;
-// tset git
+
 import java.io.*;
 import java.util.Scanner;
 
